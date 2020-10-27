@@ -10,6 +10,43 @@ app.use(cors());
 app.use(express.static(join(__dirname, 'static')))
 
 
+
+app.get('/api/v2/swap/status', (req, res) => {
+  exec(join(__dirname, '/swap/status.sh'), (err, stdout, stderr) => {
+    if (err) {
+      return res.status(400).json({ output: null, error: err.message })
+    }
+
+    res.status(200).json({ output: stdout, error: null })
+  })
+})
+
+
+app.get('/api/v2/swap/stop', (req, res) => {
+  exec(join(__dirname, '/swap/stop.sh'), (err, stdout, stderr) => {
+    if (err) {
+      return res.status(400).json({ output: null, error: err.message })
+    }
+
+    res.status(200).json({ output: stdout, error: null })
+  })
+})
+
+app.get('/api/v2/swap/start', (req, res) => {
+  exec(join(__dirname, '/swap/start.sh'), (err, stdout, stderr) => {
+    if (err) {
+      return res.status(400).json({ output: null, error: err.message })
+    }
+
+    res.status(200).json({ output: stdout, error: null })
+  })
+})
+
+
+
+
+
+
 app.get('/api/v2/mongoDB/status', (req, res) => {
   exec(join(__dirname, '/mongoDB/shellfile.sh'), (err, stdout, stderr) => {
     if (err) {
@@ -30,6 +67,27 @@ app.get('/api/v2/mongoDB/port', (req, res) => {
     res.status(200).json({ output: stdout, error: null })
   })
 })
+
+app.get('/api/v2/mongoDB/start', (req, res) => {
+  exec(join(__dirname, '/mongoDB/start.sh'), (err, stdout, stderr) => {
+    if (err) {
+      return res.status(400).json({ output: null, error: err.message })
+    }
+
+    res.status(200).json({ output: stdout, error: null })
+  })
+})
+
+app.get('/api/v2/mongoDB/stop', (req, res) => {
+  exec(join(__dirname, '/mongoDB/stop.sh'), (err, stdout, stderr) => {
+    if (err) {
+      return res.status(400).json({ output: null, error: err.message })
+    }
+
+    res.status(200).json({ output: stdout, error: null })
+  })
+})
+
 
 
 

@@ -22,7 +22,7 @@
 <div class="jumbotron">
   <div class="container">
   <div class="text-center">
-      <h5 class="text-dark h4">Linux DashBoard</h5>
+      <h5 class="text-dark h4" style="margin-top: 20px; margin-bottom: 50px; "><b>Linux DashBoard</b></h5>
       
     </div>
   <div class="row">
@@ -45,8 +45,8 @@
    <h5 class="card-title">Status : <span id="mongoDBactiveTag"></span></h5>
         <h5 class="card-title">Port : <span id="mongoDBPortTag"> ..... </span></h5>
     <br />
-    <button type="button" class="btn btn-success" size="sm" onclick="mongoStart()">Start</button>
-    <button type="button" class="btn btn-danger" size="sm" onclick="mongoStop()">Stop</button>
+    <button type="button" class="btn btn-success" size="sm" onclick="nodeStart()">Start</button>
+    <button type="button" class="btn btn-danger" size="sm" onclick="nodeStop()">Stop</button>
     
   </div>
 </div>
@@ -55,9 +55,11 @@
       <div class="card text-white bg-dark mb-3" style="max-width: 18rem;">
  <div class="card-header">Swap Memory</div>
   <div class="card-body">
-    <h5 class="card-title">Status : Active</h5>
-    <br />
-    <button type="button" class="btn btn-light">Change</button>
+    <h5 class="card-title">Status : <span id="Swapactive">.....</span></h5>
+     <h5 class="card-title">Size : <span id="SwapactiveTag">.....</span></h5>
+        <h5 class="card-title">Used : <span id="SwapPortTag"> ..... </span></h5>
+     <button type="button" class="btn btn-success" size="sm" onclick="swapStart()">Start</button>
+    <button type="button" class="btn btn-danger" size="sm" onclick="swapStop()">Stop</button>
   </div>
 </div>
     </div>
@@ -66,38 +68,55 @@
   </div>
     <div class="row">
     <div class="col-sm">
-      <div class="card text-white bg-dark mb-3" style="max-width: 18rem;">
-  <div class="card-header">Postgresql Server</div>
+      <div class="card text-white bg-dark mb-12" style="max-width: 65.1rem;">
+  <div class="card-header">Port Analizer</div>
   <div class="card-body">
-    <h5 class="card-title">Status : Active</h5>
+    <input class="form-control" type="text" placeholder="Enter a port Number"><br />
+    <button type="button" class="btn btn-success">Check</button> <button type="button" class="btn btn-Danger" disabled>Kill</button>
     <br />
-    <button type="button" class="btn btn-light">Change</button>
+    <br />
+    <h5 class="card-title">Status : Active</h5>
+
   </div>
 </div>
     </div>
-    <div class="col-sm">
-      <div class="card text-white bg-dark mb-3" style="max-width: 18rem;">
-  <div class="card-header">MongoDB Server</div>
-  <div class="card-body">
-    <h5 class="card-title">Status : Active</h5>
-    <br />
-    <button type="button" class="btn btn-light">Change</button>
-  </div>
-</div>
-    </div>
-    <div class="col-sm">
-      <div class="card text-white bg-dark mb-3" style="max-width: 18rem;">
- <div class="card-header">Swap Memory</div>
-  <div class="card-body">
-    <h5 class="card-title">Status : Active</h5>
-    <br />
-    <button type="button" class="btn btn-light">Change</button>
-  </div>
-</div>
-    </div>
-</div>
+    
+    
   </body>
   <script>
+  
+        (async function () {
+	    try {
+  		const getSwap = await fetch('http://localhost:54774/api/v2/swap/status');
+	    	const result = await getSwap.json();
+	    	console.log(result)
+	   
+	        const resultSet = result.output.trim().split(" ");
+	        
+	        if(result.output !== ""){
+	            const total = resultSet[resultSet.length-1].split("\t")[2];
+	    	    const used = resultSet[resultSet.length-1].split("\t")[3];
+	    	
+	    	    const sizeSwap = document.getElementById("SwapactiveTag");
+	    	    sizeSwap.textContent = Math.ceil(Number.parseInt(total)/ 1024) + " MB";
+	    	    
+	    	    const usedSwap = document.getElementById("SwapPortTag");
+	    	    usedSwap.textContent = Math.ceil(Number.parseInt(used)/ 1024) + " MB";
+	    	    
+	    	    const Swapactive = document.getElementById("Swapactive");
+	    	    Swapactive.textContent = "Active"
+	        }else{
+	            const Swapactive = document.getElementById("Swapactive");
+	    	    Swapactive.textContent = "inactive"
+	        }
+	
+	    	
+	    	
+		}catch(err) {
+ 		   console.log(err);
+		}
+	})();
+  
   	(async function () {
 	    try {
   		const getPostgre = await fetch('http://localhost:54774/api/v2/postgres/status');
@@ -133,6 +152,7 @@
 	})();
 	
 	
+	
 	(async function () {
 	    try {
   		const getMongoDB = await fetch('http://localhost:54774/api/v2/mongoDB/status');
@@ -160,6 +180,41 @@
 	    	   }
 	    	}else{
 	    	       const activeTag = document.getElementById('mongoDBactiveTag');
+	    	       activeTag.innerHTML = "Inactive";
+	    	}
+		}catch(err) {
+ 		   console.log(err);
+		}
+	})();
+	
+	
+	(async function () {
+	    try {
+  		const getPostgre = await fetch('http://localhost:54774/api/v2/postgres/status');
+	    	const result = await getPostgre.json();
+	   
+	    	if(result.error === null || result.error === undefined){
+	    	   const resultString = result.output.trim().split(" ");
+	    	   if(resultString.includes('active')){
+	    	       
+	    	       
+	    	       const getPostgrePort = await fetch('http://localhost:54774/api/v2/postgres/port');
+	    	const resultstatusPort = await getPostgrePort.json();
+	    	const resultPortString = resultstatusPort.output.trim().split(" ");
+	    	const filteredData = resultPortString.filter( data => data.length > 10)
+	    	const port = filteredData[0].substring(10,20);
+	    	
+	    	   
+	    	   const activeTag = document.getElementById('activeTag');
+	    	   activeTag.innerHTML = "Active";
+	    	   
+	    	   const portTag = document.getElementById('postgresPortTag');
+	    	   portTag.innerHTML = port;
+	    	   
+	    	       
+	    	   }
+	    	}else{
+	    	       const activeTag = document.getElementById('activeTag');
 	    	       activeTag.innerHTML = "Inactive";
 	    	}
 		}catch(err) {
@@ -216,6 +271,117 @@
 		}
 	}
 	
+	const nodeStart = async () => {
+	    const activeTag = document.getElementById('mongoDBactiveTag');
+	    	 activeTag.innerHTML = "Activating...";
+	
+	    try {
+  		const startMongoDB = await fetch('http://localhost:54774/api/v2/mongoDB/start');
+	    	const result = await startMongoDB.json();
+	    	
+	    	 const getMongoPort = await fetch('http://localhost:54774/api/v2/mongoDB/port');
+	    	const resultstatusPort = await getMongoPort.json();
+	    	const resultPortString = resultstatusPort.output.trim().split(" ");
+	    	const filteredData = resultPortString.filter( data => data.length > 10)
+	    	const port = filteredData[0].substring(10,20);
+	    	
+	    	   
+	    	   const activeTag = document.getElementById('mongoDBactiveTag');
+	    	   activeTag.innerHTML = "Active";
+	    	   
+	    	   const portTag = document.getElementById('mongoDBPortTag');
+	    	   portTag.innerHTML = port;
+	    	   
+	    	   
+	    	   
+	    	   
+		}catch(err) {
+ 		   console.log(err);
+		}
+	}
+	
+	
+	const nodeStop = async () => {
+	    const activeTag = document.getElementById('mongoDBactiveTag');
+	    	 activeTag.innerHTML = "Stopping...";
+	
+	    try {
+  		const startPostgresMongoDB = await fetch('http://localhost:54774/api/v2/mongoDB/stop');
+	    	const result = await startPostgresMongoDB.json();
+	    	
+	    	 
+	    	 activeTag.innerHTML = "Inactive";
+	    	 
+	    	 const portTag = document.getElementById('mongoDBPortTag');
+	    	 portTag.innerHTML = "....";
+	    	 
+	    	
+	    	
+	    	 
+	    	   
+		}catch(err) {
+ 		   console.log(err);
+		}
+	}
+	
+	const swapStop = async () => {
+	const activeTag = document.getElementById('Swapactive');
+	    	 activeTag.innerHTML = "Stopping...";
+	   try {
+  		const stopSwap = await fetch('http://localhost:54774/api/v2/swap/stop');
+	    	const result = await stopSwap.json();
+	    	
+	    	 
+	    	 activeTag.innerHTML = "Inactive";
+	    	 
+	    	const sizeSwap = document.getElementById("SwapactiveTag");
+	    	 sizeSwap.textContent = "....";
+	    	    
+	    	 const usedSwap = document.getElementById("SwapPortTag");
+	    	 usedSwap.textContent = "....";
+	    	  
+	    	  
+	    	   
+		}catch(err) {
+ 		   console.log(err);
+		}
+	}
+	
+	const swapStart = async () => {
+	const activeTag = document.getElementById('Swapactive');
+	    	 activeTag.innerHTML = "Starting...";
+	   try {
+  		const startSwap = await fetch('http://localhost:54774/api/v2/swap/start');
+	    	const result = await startSwap.json();
+	    	
+	    	 
+	    	 activeTag.innerHTML = "Active";
+	    	 
+	    	const getSwap = await fetch('http://localhost:54774/api/v2/swap/status');
+	    	const result2 = await getSwap.json();
+	 
+	        const resultSet = result2.output.trim().split(" ");
+	        
+	        
+	            const total = resultSet[resultSet.length-1].split("\t")[2];
+	    	    const used = resultSet[resultSet.length-1].split("\t")[3];
+	    	
+	    	    const sizeSwap = document.getElementById("SwapactiveTag");
+	    	    sizeSwap.textContent = Math.ceil(Number.parseInt(total)/ 1024) + " MB";
+	    	    
+	    	    const usedSwap = document.getElementById("SwapPortTag");
+	    	    usedSwap.textContent = Math.ceil(Number.parseInt(used)/ 1024) + " MB";
+	    	    
+	    	    const Swapactive = document.getElementById("Swapactive");
+	    	    Swapactive.textContent = "Active"
+	       
+	
+	    	  
+	    	   
+		}catch(err) {
+ 		   console.log(err);
+		}
+	}
 	
   </script>
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
