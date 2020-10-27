@@ -20,6 +20,17 @@ app.get('/api/v2/port/:status', (req, res) => {
   })
 })
 
+app.get('/api/v2/port/kill/:killpid', (req, res) => {
+  exec(join(__dirname, `/port/kill.sh ${req.params.killpid}`), (err, stdout, stderr) => {
+    if (err) {
+      return res.status(400).json({ output: null, error: err.message })
+    }
+
+    res.status(200).json({ output: stdout, error: null })
+  })
+})
+
+
 
 
 
