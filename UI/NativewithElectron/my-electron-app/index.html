@@ -1,0 +1,488 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <title>Linux DashBoard</title>
+    <style>
+    	.show{
+    	   display: inline;
+    	}
+    	
+    	.hide{
+    	   display: none;
+    	}
+    </style>
+  </head>
+  <body>
+  <div class="fixed-top">
+  <div class="collapse" id="navbarToggleExternalContent">
+    <div class="bg-dark p-4">
+      <h5 class="text-white h4">Linux DashBoard</h5>
+      <span class="text-muted">By Shihara-Dilshan</span>
+    </div>
+  </div>
+  <nav class="navbar navbar-dark bg-dark">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  </nav>
+</div>
+<div class="jumbotron">
+  <div class="container">
+  <div class="text-center">
+      <h5 class="text-dark h4" style="margin-top: 20px; margin-bottom: 50px; "><b>Linux DashBoard</b></h5>
+      
+    </div>
+  <div class="row">
+    <div class="col-sm">
+      <div class="card text-white bg-dark mb-3" style="max-width: 18rem;">
+  <div class="card-header">Postgresql Server</div>
+  <div class="card-body">
+    <h5 class="card-title">Status : <span id="activeTag"></span></h5>
+        <h5 class="card-title">Port : <span id="postgresPortTag"> ..... </span></h5>
+    <br />
+    <button type="button" class="btn btn-success" size="sm" onclick="postgresStart()">Start</button>
+    <button type="button" class="btn btn-danger" size="sm" onclick="postgresStop()">Stop</button>
+  </div>
+</div>
+    </div>
+    <div class="col-sm">
+      <div class="card text-white bg-dark mb-3" style="max-width: 18rem;">
+  <div class="card-header">MongoDB Server</div>
+  <div class="card-body">
+   <h5 class="card-title">Status : <span id="mongoDBactiveTag"></span></h5>
+        <h5 class="card-title">Port : <span id="mongoDBPortTag"> ..... </span></h5>
+    <br />
+    <button type="button" class="btn btn-success" size="sm" onclick="nodeStart()">Start</button>
+    <button type="button" class="btn btn-danger" size="sm" onclick="nodeStop()">Stop</button>
+    
+  </div>
+</div>
+    </div>
+    <div class="col-sm">
+      <div class="card text-white bg-dark mb-3" style="max-width: 18rem;">
+ <div class="card-header">Swap Memory</div>
+  <div class="card-body">
+    <h5 class="card-title">Status : <span id="Swapactive">.....</span></h5>
+     <h5 class="card-title">Size : <span id="SwapactiveTag">.....</span></h5>
+        <h5 class="card-title">Used : <span id="SwapPortTag"> ..... </span></h5>
+     <button type="button" class="btn btn-success" size="sm" onclick="swapStart()">Start</button>
+    <button type="button" class="btn btn-danger" size="sm" onclick="swapStop()">Stop</button>
+  </div>
+</div>
+    </div>
+    <br />
+    
+  </div>
+    <div class="row">
+    <div class="col-sm">
+      <div class="card text-white bg-dark mb-12" style="max-width: 65.1rem;">
+  <div class="card-header">Port Analizer</div>
+  <div class="card-body">
+    <input class="form-control" type="text" placeholder="Enter a port Number" id="portNo"><br />
+    <button type="button" class="btn btn-success" onclick="checkPort()">Check</button> <button type="button" class="hide btn btn-Danger" id="killSwitch" onClick="kill()">Kill</button>
+    <br />
+    <br />
+    <h5 class="card-title"><u>Details</u></h5>
+     <h5 class="card-title text-muted">Port Number : <span id="portID">  </span></h5>
+    <h5 class="card-title text-muted">Listing to Process : <span id="processID">  </span></h5>
+
+  </div>
+</div>
+    </div>
+    
+    
+  </body>
+  <script>
+  
+        (async function () {
+	    try {
+  		const getSwap = await fetch('http://localhost:54774/api/v2/swap/status');
+	    	const result = await getSwap.json();
+	    	console.log(result)
+	   
+	        const resultSet = result.output.trim().split(" ");
+	        
+	        if(result.output !== ""){
+	            const total = resultSet[resultSet.length-1].split("\t")[2];
+	    	    const used = resultSet[resultSet.length-1].split("\t")[3];
+	    	
+	    	    const sizeSwap = document.getElementById("SwapactiveTag");
+	    	    sizeSwap.textContent = Math.ceil(Number.parseInt(total)/ 1024) + " MB";
+	    	    
+	    	    const usedSwap = document.getElementById("SwapPortTag");
+	    	    usedSwap.textContent = Math.ceil(Number.parseInt(used)/ 1024) + " MB";
+	    	    
+	    	    const Swapactive = document.getElementById("Swapactive");
+	    	    Swapactive.textContent = "Active"
+	        }else{
+	            const Swapactive = document.getElementById("Swapactive");
+	    	    Swapactive.textContent = "inactive"
+	        }
+	
+	    	
+	    	
+		}catch(err) {
+ 		   console.log(err);
+		}
+	})();
+  
+  	(async function () {
+	    try {
+  		const getPostgre = await fetch('http://localhost:54774/api/v2/postgres/status');
+	    	const result = await getPostgre.json();
+	   
+	    	if(result.error === null || result.error === undefined){
+	    	   const resultString = result.output.trim().split(" ");
+	    	   if(resultString.includes('active')){
+	    	       
+	    	       
+	    	       const getPostgrePort = await fetch('http://localhost:54774/api/v2/postgres/port');
+	    	const resultstatusPort = await getPostgrePort.json();
+	    	const resultPortString = resultstatusPort.output.trim().split(" ");
+	    	const filteredData = resultPortString.filter( data => data.length > 10)
+	    	const port = filteredData[0].substring(10,20);
+	    	
+	    	   
+	    	   const activeTag = document.getElementById('activeTag');
+	    	   activeTag.innerHTML = "Active";
+	    	   
+	    	   const portTag = document.getElementById('postgresPortTag');
+	    	   portTag.innerHTML = port;
+	    	   
+	    	       
+	    	   }
+	    	}else{
+	    	       const activeTag = document.getElementById('activeTag');
+	    	       activeTag.innerHTML = "Inactive";
+	    	}
+		}catch(err) {
+ 		   console.log(err);
+		}
+	})();
+	
+	
+	
+	(async function () {
+	    try {
+  		const getMongoDB = await fetch('http://localhost:54774/api/v2/mongoDB/status');
+	    	const result = await getMongoDB.json();
+	   
+	    	if(result.error === null || result.error === undefined){
+	    	   const resultString = result.output.trim().split(" ");
+	    	   if(resultString.includes('active')){
+	    	       
+	    	       
+	    	       const getMongoPort = await fetch('http://localhost:54774/api/v2/mongoDB/port');
+	    	const resultstatusPort = await getMongoPort.json();
+	    	const resultPortString = resultstatusPort.output.trim().split(" ");
+	    	const filteredData = resultPortString.filter( data => data.length > 10)
+	    	const port = filteredData[0].substring(10,20);
+	    	
+	    	   
+	    	   const activeTag = document.getElementById('mongoDBactiveTag');
+	    	   activeTag.innerHTML = "Active";
+	    	   
+	    	   const portTag = document.getElementById('mongoDBPortTag');
+	    	   portTag.innerHTML = port;
+	    	   
+	    	       
+	    	   }
+	    	}else{
+	    	       const activeTag = document.getElementById('mongoDBactiveTag');
+	    	       activeTag.innerHTML = "Inactive";
+	    	}
+		}catch(err) {
+ 		   console.log(err);
+		}
+	})();
+	
+	
+	(async function () {
+	    try {
+  		const getPostgre = await fetch('http://localhost:54774/api/v2/postgres/status');
+	    	const result = await getPostgre.json();
+	   
+	    	if(result.error === null || result.error === undefined){
+	    	   const resultString = result.output.trim().split(" ");
+	    	   if(resultString.includes('active')){
+	    	       
+	    	       
+	    	       const getPostgrePort = await fetch('http://localhost:54774/api/v2/postgres/port');
+	    	const resultstatusPort = await getPostgrePort.json();
+	    	const resultPortString = resultstatusPort.output.trim().split(" ");
+	    	const filteredData = resultPortString.filter( data => data.length > 10)
+	    	const port = filteredData[0].substring(10,20);
+	    	
+	    	   
+	    	   const activeTag = document.getElementById('activeTag');
+	    	   activeTag.innerHTML = "Active";
+	    	   
+	    	   const portTag = document.getElementById('postgresPortTag');
+	    	   portTag.innerHTML = port;
+	    	   
+	    	       
+	    	   }
+	    	}else{
+	    	       const activeTag = document.getElementById('activeTag');
+	    	       activeTag.innerHTML = "Inactive";
+	    	}
+		}catch(err) {
+ 		   console.log(err);
+		}
+	})();
+	
+	const postgresStart = async () => {
+	    const activeTag = document.getElementById('activeTag');
+	    	 activeTag.innerHTML = "Activating...";
+	
+	    try {
+  		const startPostgres = await fetch('http://localhost:54774/api/v2/postgres/start');
+	    	const result = await startPostgres.json();
+	    	
+	    	const getPostgre = await fetch('http://localhost:54774/api/v2/postgres/port');
+	    	const resultstatus = await getPostgre.json();
+	    	const resultString = resultstatus.output.trim().split(" ");
+	    	const filteredData = resultString.filter( data => data.length > 10)
+	    	const port = filteredData[0].substring(10,20);
+	    	
+	    	   
+	    	   const activeTag = document.getElementById('activeTag');
+	    	   activeTag.innerHTML = "Active";
+	    	   
+	    	   const portTag = document.getElementById('postgresPortTag');
+	    	   portTag.innerHTML = port;
+	    	   
+	    	   
+	    	   
+		}catch(err) {
+ 		   console.log(err);
+		}
+	}
+	
+	
+	const postgresStop = async () => {
+	    const activeTag = document.getElementById('activeTag');
+	    	 activeTag.innerHTML = "Stopping...";
+	
+	    try {
+  		const startPostgres = await fetch('http://localhost:54774/api/v2/postgres/stop');
+	    	const result = await startPostgres.json();
+	    	
+	    	 const activeTag = document.getElementById('activeTag');
+	    	 activeTag.innerHTML = "Inactive";
+	    	 
+	    	 const portTag = document.getElementById('postgresPortTag');
+	    	   portTag.innerHTML = "....";
+	    	  
+	    	   
+		}catch(err) {
+ 		   console.log(err);
+		}
+	}
+	
+	const nodeStart = async () => {
+	    const activeTag = document.getElementById('mongoDBactiveTag');
+	    	 activeTag.innerHTML = "Activating...";
+	
+	    try {
+  		const startMongoDB = await fetch('http://localhost:54774/api/v2/mongoDB/start');
+	    	const result = await startMongoDB.json();
+	    	
+	    	 const getMongoPort = await fetch('http://localhost:54774/api/v2/mongoDB/port');
+	    	const resultstatusPort = await getMongoPort.json();
+	    	const resultPortString = resultstatusPort.output.trim().split(" ");
+	    	const filteredData = resultPortString.filter( data => data.length > 10)
+	    	const port = filteredData[0].substring(10,20);
+	    	
+	    	   
+	    	   const activeTag = document.getElementById('mongoDBactiveTag');
+	    	   activeTag.innerHTML = "Active";
+	    	   
+	    	   const portTag = document.getElementById('mongoDBPortTag');
+	    	   portTag.innerHTML = port;
+	    	   
+	    	   
+	    	   
+	    	   
+		}catch(err) {
+ 		   console.log(err);
+		}
+	}
+	
+	
+	const nodeStop = async () => {
+	    const activeTag = document.getElementById('mongoDBactiveTag');
+	    	 activeTag.innerHTML = "Stopping...";
+	
+	    try {
+  		const startPostgresMongoDB = await fetch('http://localhost:54774/api/v2/mongoDB/stop');
+	    	const result = await startPostgresMongoDB.json();
+	    	
+	    	 
+	    	 activeTag.innerHTML = "Inactive";
+	    	 
+	    	 const portTag = document.getElementById('mongoDBPortTag');
+	    	 portTag.innerHTML = "....";
+	    	 
+	    	
+	    	
+	    	 
+	    	   
+		}catch(err) {
+ 		   console.log(err);
+		}
+	}
+	
+	const swapStop = async () => {
+	const activeTag = document.getElementById('Swapactive');
+	    	 activeTag.innerHTML = "Stopping...";
+	   try {
+  		const stopSwap = await fetch('http://localhost:54774/api/v2/swap/stop');
+	    	const result = await stopSwap.json();
+	    	
+	    	 
+	    	 activeTag.innerHTML = "Inactive";
+	    	 
+	    	const sizeSwap = document.getElementById("SwapactiveTag");
+	    	 sizeSwap.textContent = "....";
+	    	    
+	    	 const usedSwap = document.getElementById("SwapPortTag");
+	    	 usedSwap.textContent = "....";
+	    	  
+	    	  
+	    	   
+		}catch(err) {
+ 		   console.log(err);
+		}
+	}
+	
+	const swapStart = async () => {
+	const activeTag = document.getElementById('Swapactive');
+	    	 activeTag.innerHTML = "Starting...";
+	   try {
+  		const startSwap = await fetch('http://localhost:54774/api/v2/swap/start');
+	    	const result = await startSwap.json();
+	    	
+	    	 
+	    	 activeTag.innerHTML = "Active";
+	    	 
+	    	const getSwap = await fetch('http://localhost:54774/api/v2/swap/status');
+	    	const result2 = await getSwap.json();
+	 
+	        const resultSet = result2.output.trim().split(" ");
+	        
+	        
+	            const total = resultSet[resultSet.length-1].split("\t")[2];
+	    	    const used = resultSet[resultSet.length-1].split("\t")[3];
+	    	
+	    	    const sizeSwap = document.getElementById("SwapactiveTag");
+	    	    sizeSwap.textContent = Math.ceil(Number.parseInt(total)/ 1024) + " MB";
+	    	    
+	    	    const usedSwap = document.getElementById("SwapPortTag");
+	    	    usedSwap.textContent = Math.ceil(Number.parseInt(used)/ 1024) + " MB";
+	    	    
+	    	    const Swapactive = document.getElementById("Swapactive");
+	    	    Swapactive.textContent = "Active"
+	       
+	
+	    	  
+	    	   
+		}catch(err) {
+ 		   console.log(err);
+		}
+	}
+	
+	const checkPort = async () => {
+	      const port = document.getElementById("portNo").value;
+	      const temp = document.getElementById("portNo").value;
+	      const numbers = /^[-+]?[0-9]+$/;
+	
+	      if(port.match(numbers))
+	      {
+		      try{
+		         const checkPort = await fetch(`http://localhost:54774/api/v2/port/${port}`);
+	    	         const result = await checkPort.json();
+	    	         
+	    	         
+	    	         if(result.output === null || result.output === undefined){
+	    	              alert(`${temp} port is not listing to any process`);
+	    	              
+	    	         }else{
+	    	           
+	    	            const results = result.output.trim().split(" ");
+	    	   
+	    	             pID = results[results.length-1];
+	    	             finalProcess = "";
+	    	             
+	    	             portID.textContent = temp;
+	    	             document.getElementById("portNo").value = "";
+	    	             
+	    	            
+	    	             for(let i=0; i<= pID.length-1; i++){if(Number.isInteger(Number.parseInt(pID[i]))){ finalProcess =finalProcess + pID[i]}}
+	    	             const processID = document.getElementById("processID");
+	    	             processID.textContent = finalProcess;
+	    	             
+	    	             localStorage.setItem("killPID", finalProcess);
+	    	             
+	    	             const killSwitch = document.getElementById("killSwitch");
+	    	             killSwitch.classList.remove('hide');
+	    	             killSwitch.classList.add('show');
+	    	            
+	    	         }
+		      }catch(err){
+		         console.log(err);
+		        
+		      }
+		      return true;
+	      }
+	      else
+	      {
+	      	     alert("Enter a valid port number");
+	              return false;
+	      }
+
+	       
+	         
+	      
+	      
+	      
+	
+		
+	}
+	
+	
+	const kill = async () => {
+	    const killPID = localStorage.getItem("killPID");
+	    if(killPID === null || killPID === undefined){
+	       alert("There is no precess to be killed");
+	    }else{
+	       try{
+		         const killProcess = await fetch(`http://localhost:54774/api/v2/port/kill/${killPID}`);
+	    	         const result = await killProcess.json();
+	    	         
+	    	         console.log(result)
+	    	         
+	    	         
+	    	         alert("Successfully killed the process");
+	    	         const processID = document.getElementById("processID");
+	    	             processID.textContent = "";
+	    	             
+	    	             localStorage.clear();
+	    	             
+	    	             const killSwitch = document.getElementById("killSwitch");
+	    	             killSwitch.classList.remove('show');
+	    	             killSwitch.classList.add('hide');
+	    	         
+		      }catch(err){
+		         console.log(err);
+		        
+		      }
+	    }
+	}
+	
+  </script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+</html>
