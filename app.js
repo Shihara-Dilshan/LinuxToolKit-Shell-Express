@@ -10,6 +10,19 @@ app.use(cors());
 app.use(express.static(join(__dirname, 'static')))
 
 
+app.get('/api/v2/port/:status', (req, res) => {
+  exec(join(__dirname, `/port/status.sh ${req.params.status}`), (err, stdout, stderr) => {
+    if (err) {
+      return res.status(400).json({ output: null, error: err.message })
+    }
+
+    res.status(200).json({ output: stdout, error: null })
+  })
+})
+
+
+
+
 
 app.get('/api/v2/swap/status', (req, res) => {
   exec(join(__dirname, '/swap/status.sh'), (err, stdout, stderr) => {

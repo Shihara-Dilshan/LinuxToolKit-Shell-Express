@@ -71,11 +71,13 @@
       <div class="card text-white bg-dark mb-12" style="max-width: 65.1rem;">
   <div class="card-header">Port Analizer</div>
   <div class="card-body">
-    <input class="form-control" type="text" placeholder="Enter a port Number"><br />
-    <button type="button" class="btn btn-success">Check</button> <button type="button" class="btn btn-Danger" disabled>Kill</button>
+    <input class="form-control" type="text" placeholder="Enter a port Number" id="portNo"><br />
+    <button type="button" class="btn btn-success" onclick="checkPort()">Check</button> <button type="button" class="btn btn-Danger" id="killSwitch" disabled=true>Kill</button>
     <br />
     <br />
-    <h5 class="card-title">Status : Active</h5>
+    <h5 class="card-title"><u>Details</u></h5>
+     <h5 class="card-title text-muted">Port Number : <span id="portID">  </span></h5>
+    <h5 class="card-title text-muted">Listing to Process : <span id="processID">  </span></h5>
 
   </div>
 </div>
@@ -381,6 +383,61 @@
 		}catch(err) {
  		   console.log(err);
 		}
+	}
+	
+	const checkPort = async () => {
+	      const port = document.getElementById("portNo").value;
+	      const temp = document.getElementById("portNo").value;
+	      const numbers = /^[-+]?[0-9]+$/;
+	
+	      if(port.match(numbers))
+	      {
+		      try{
+		         const checkPort = await fetch(`http://localhost:54774/api/v2/port/${port}`);
+	    	         const result = await checkPort.json();
+	    	         
+	    	         
+	    	         if(result.output === null || result.output === undefined){
+	    	              alert(`${temp} port is not listing to any process`);
+	    	              
+	    	         }else{
+	    	           
+	    	            const results = result.output.trim().split(" ");
+	    	   
+	    	             pID = results[results.length-1];
+	    	             finalProcess = "";
+	    	             
+	    	             portID.textContent = temp;
+	    	             document.getElementById("portNo").value = "";
+	    	             
+	    	            
+	    	             for(let i=0; i<= pID.length-1; i++){if(Number.isInteger(Number.parseInt(pID[i]))){ finalProcess =finalProcess + pID[i]}}
+	    	             const processID = document.getElementById("processID");
+	    	             processID.textContent = finalProcess;
+	    	             
+	    	             
+	    	             
+	    	            
+	    	         }
+		      }catch(err){
+		         console.log(err);
+		        
+		      }
+		      return true;
+	      }
+	      else
+	      {
+	      	     alert("Enter a valid port number");
+	              return false;
+	      }
+
+	       
+	         
+	      
+	      
+	      
+	
+		
 	}
 	
   </script>
